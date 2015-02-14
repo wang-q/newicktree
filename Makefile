@@ -1,7 +1,6 @@
 SRC := $(wildcard *.tex)
 PDF := $(patsubst %.tex,%.pdf,$(SRC))
-TEXC := xelatex
-TEXC_OPTS += -shell-escape
+
 TEXMFHOME = $(shell kpsewhich -var-value=TEXMFHOME)
 INSTALL_DIR = $(TEXMFHOME)/tex/latex/newicktree
 
