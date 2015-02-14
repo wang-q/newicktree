@@ -1,0 +1,25 @@
+
+%% This is nttest.tex
+%  It will compile only if your newicktree installation has been successful
+
+
+\documentclass{article}
+
+\usepackage{newicktree}
+
+\begin{document}
+
+\title{\textsf{newicktree} test document}
+\author{George Savva}
+\date{December '03}
+\maketitle
+
+If this document has compiled and your tree looks okay, then \textsf{newicktree} has been successfully installed on your system!
+
+If the document compiled but the tree does not look okay, then it is possible that you are using a dvi preview to view / print the document.  Please use a dvi-ps converter (preferably dvips) to generate a PostScript file, and try looking at that.
+
+\begin{newicktree}
+\drawtree{((My:1,first:1.5):0.5,(\sf newicktree:2,tree!:2.5):0.5):0.5;}
+\end{newicktree}
+
+\end{document}

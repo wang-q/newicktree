@@ -1,0 +1,25 @@
+
+
+%% This is psttest.tex
+%  It will compile only if your PSTricks installation is adequate for running newicktree.
+%  This file has nothing to do with the authors/support team of PSTricks.
+
+
+\documentclass{article}
+
+\usepackage{pst-tree}
+
+\begin{document}
+
+\title{\textsf{PSTricks} test document}
+\author{George Savva}
+\date{December '03}
+\maketitle
+
+If this document has compiled and the simple two-taxon tree looks okay, then the \textsf{PSTricks} installation on your system is adequate for using the \textsf{newicktree} package.
+
+If the file compiles but the tree does not appear correctly, then it is possible that you are viewing a dvi file.  Please convert your dvi file to a PostScript file (preferrably using dvips), and try viewing that.
+
+\pstree{\Tdot}{\skiplevel[levelsep=1]{\Tdot~{Node 1}}\skiplevel[levelsep=1.5]{\Tdot~{Node 2}}}
+
+\end{document}

@@ -1,0 +1,324 @@
+
+
+
+  %% newicktree.sty
+  %% Copyright 2004 George Savva  (email:  george.savva@bbsrc.ac.uk)
+  %
+  % This program may be distributed and/or modified under the
+  % conditions of the LaTeX Project Public License (lppl), either version 1.2
+  % of this license or (at your option) any later version.
+  % The latest version of this license is in
+  %   http://www.latex-project.org/lppl.txt
+  % and version 1.2 or later is part of all distributions of LaTeX 
+  % version 1999/12/01 or later.
+  %
+  % This program consists of the files newicktree.sty (the package file)
+  % and ntdoc.tex (its documentation)
+  %
+  % Further to the lppl, you may modify any part of the program for 
+  % your own personal use so as to change the default operation or
+  % fix any bugs.  You may not, however, distribute modified copies
+  % of the program without meeting all of the conditions specified by
+  % the license.
+  %
+  % If you believe that this license or any other terms imposed are
+  % somehow preventing the satisfactory use or functioning of the program
+  % then please contact me at the address given above.
+
+
+
+
+\ProvidesPackage{newicktree}[2004/02/22]
+
+\NeedsTeXFormat{LaTeX2e}[1994/01/01]
+
+\RequirePackage{pst-tree}
+\RequirePackage{pst-node}
+
+%Defaults go here..
+\def\NT@ctprop{80}
+\def\NT@latertreesepset{}
+\def\NT@lengthlabelcommand{\taput}
+\def\NT@bootlabelcommand{\tbput}
+\def\NT@labelmodifier{\it}
+\def\NT@lengthmodifier{}
+\def\NT@bootmodifier{\bf}
+\def\NT@bvpos{a}
+\def\NT@treemodeset{\psset{treemode=D}}
+\def\NT@treesepset{\psset{treesep=0.75cm}}
+\def\NT@contempspecial{\relax}
+\def\NT@contempspecialend{\relax}
+
+%Now the commands to build up / set arguments..
+
+\def\NT@displaylength{\NT@lengthlabelcommand{\NT@lengthmodifier\NT@length}}
+\def\NT@displaybootval{\NT@bootlabelcommand{\NT@bootmodifier\NT@bv}}
+%\def\NT@numlength{\NT@length}
+\def\NT@numlength{\the\dimen21}%
+\def\NT@gdownangles{\gdef\NT@angleA{0} \gdef\NT@angleAc{-90}\gdef\NT@angleB{90} \gdef\NT@bvpos{l}}
+\def\NT@downangles{\def\NT@angleA{0} \def\NT@angleAc{-90}\def\NT@angleB{90} \def\NT@bvpos{l}}
+\def\NT@upangles{\def\NT@angleA{180} \def\NT@angleAc{90}\def\NT@angleB{-90} \def\NT@bvpos{l}}
+\def\NT@gupangles{\gdef\NT@angleA{180} \gdef\NT@angleAc{90}\gdef\NT@angleB{-90} \gdef\NT@bvpos{l}}
+\def\NT@ghorizontalangles{\gdef\NT@angleA{90} \gdef\NT@angleAc{0}\gdef\NT@angleB{180} \gdef\NT@bvpos{a}}
+\def\NT@horizontalangles{\def\NT@angleA{90} \def\NT@angleAc{0}\def\NT@angleB{180} \def\NT@bvpos{a}}
+\def\NT@gleftangles{\gdef\NT@angleA{-90} \gdef\NT@angleAc{180}\gdef\NT@angleB{0} \gdef\NT@bvpos{a}}
+\def\NT@leftangles{\def\NT@angleA{-90} \def\NT@angleAc{180}\def\NT@angleB{0} \def\NT@bvpos{a}}
+
+%Now the tree drawing routines
+
+\def\NT@displaytree#1#2#3#4%
+{%
+\def\NT@bv{#4}%
+\def\NT@length{\NT@getnumber #2,f\end}%
+\begingroup%
+\dimen21=\dimen20%
+\advance\dimen21 by-\dimen0%
+\newif\ifsubcomma%
+\NT@scanforcomma#1;%
+\ifsubcomma%
+\divide\dimen21 by100%
+\multiply\dimen21 by\NT@ctprop%
+\advance\dimen0 by\dimen21%
+\skiplevel[levelsep=\NT@numlength,tnsep=1ex]{\pstree[levelsep=0]{\NT@node~{\NT@labelmodifier #3}\NT@displaybootval\NT@displaylength}{\NT@internalpstree#1;}}%
+\else %
+\skiplevel[levelsep=\NT@numlength,tnsep=\NT@curtnsep]{\NT@node~{\NT@labelmodifier #1#3}\nbput[nrot=0]{\NT@bootmodifier #4}\NT@displaylength}%
+\fi%
+\endgroup%
+\newif\ifdistcomma%
+\NT@scanfordistcomma#2\end%
+\ifdistcomma\NT@internaladditionaltreeout#2;\else\relax\fi%
+}
+\newif\ifcurtn
+\def\NT@curtnsep{\ifcurtn4ex\global\curtnfalse\else 1.5ex\global\curtntrue\fi}
+
+\def\NT@scanforcomma#1{\if;#1\let\next=\relax\else\if,#1\subcommatrue\fi\let\next=\NT@scanforcomma\fi\next}
+\def\NT@scanfordistcomma#1{\ifx\end#1\let\next=\relax\else\ifx,#1\distcommatrue\fi\let\next=\NT@scanfordistcomma\fi\next}
+\def\NT@scanforcolon#1{\ifx\end#1\let\next=\relax\else\ifx:#1\colontrue\fi\let\next=\NT@scanforcolon\fi\next}
+
+\def\NT@scanforsquare#1{%
+\ifx\end#1\let\next=\relax%
+\else%
+\ifx,#1\commatrue%
+\else%
+\ifx[#1\ifcomma\relax\else\squaretrue\fi\fi%
+\fi%
+\let\next=\NT@scanforsquare%
+\fi%
+\next
+}
+
+\def\NT@internaladditionaltree#1,#2#3:#4;{\NT@displaytree{#2}{#4}{#3}}
+\def\NT@internaladditionaltreeout#1,#2;{\NT@internalpstree#2;}
+
+\def\NT@getnumber#1,#2\end{#1}
+
+\def\NT@internalpstree#1;{%
+\newif\ifcomma\newif\ifsquare%
+\NT@scanforsquare#1\end%
+\ifsquare\NT@makesubtreebootout#1\end%
+\else\ifcomma\NT@makesubtreebootin#1\relax\end\else\NT@makesubtreebootinlast#1\end\fi\fi}
+
+\def\NT@makesubtreebootinlast#1#2:#3\end{\NT@displaytree{#1}{#3}{#2}{\relax}}
+\def\NT@makesubtreebootin#1#2:#3\relax\end{\NT@displaytree{#1}{#3}{#2}{\relax}}
+\def\NT@makesubtreebootout#1#2:#3[#4]#5\end{\NT@displaytree{#1}{#3#5}{#2}{#4}}
+\def\NT@nocolon{%
+\nobranchlengths%
+\def\NT@makesubtreebootinlast##1##2\end{\NT@displaytree{##1}{1}{##2}{\relax}}%
+\def\NT@makesubtreebootin##1##2,##3\end{\NT@displaytree{##1}{1,##3}{##2}{\relax}}%
+\def\NT@makesubtreebootout##1##2[##3]##4\end{\NT@displaytree{##1}{1##4}{##2}{##3}}}
+
+
+\def\NT@checkforcolon#1;{\NT@scanforcolon#1\end}
+
+\def\NT@makepstree#1#2%
+{%
+	\begingroup
+	\dimen0=0pt
+	\dimen20=\NT@unitlength
+	\newif\ifcolon
+	\NT@checkforcolon#1
+	\ifcolon\relax\else\NT@nocolon\fi
+	\NT@treemodeset
+	\NT@treesepset\NT@latertreesepset
+	\NT@unitcommand
+	\NT@branchstylecommand
+	\pstree[levelsep=0pt,showbbox=false,xbbh=3ex,xbbd=2ex,tnsep=2ex]{\NT@node\nput{\NT@angleB}{\pssucc}{\NT@labelmodifier#2}}{\NT@internalpstree#1}
+	\endgroup
+}
+
+
+%*************************
+% LaTeX bits below here  *
+%*************************
+
+
+\newenvironment{newicktree}
+{
+	\def\lb{\char"28}
+	\def\rb{\char"29}
+	\def\setunitlength##1{\def\NT@unitcommand{\psset{unit=##1}}\def\NT@unitlength{##1}}
+	\def\Setunitlength##1{\gdef\NT@unitcommand{\psset{unit=##1}}\gdef\NT@unitlength{##1}}
+	\def\nodelabelformat##1{\def\NT@labelmodifier{##1}}
+	\def\Nodelabelformat##1{\gdef\NT@labelmodifier{##1}}
+	\def\bootlabelformat##1{\def\NT@bootmodifier{##1}}
+	\def\Bootlabelformat##1{\gdef\NT@bootmodifier{##1}}
+	\def\lengthlabelformat##1{\def\NT@lengthmodifier{##1}}
+	\def\Lengthlabelformat##1{\gdef\NT@lengthmodifier{##1}}
+	\def\Nodemarkers{\gdef\NT@node{\Tdot}}
+	\def\nodemarkers{\def\NT@node{\Tdot}}
+	\def\Nonodemarkers{\gdef\NT@node{\Tp}}
+	\def\nonodemarkers{\def\NT@node{\Tp}}
+	\def\uptree{
+		\def\NT@treemodeset{\psset{treemode=U}}
+		\def\NT@lengthlabelcommand{\naput[nrot=0]}
+		\def\NT@bootlabelcommand{\nbput[nrot=0]}
+		\NT@upangles
+		}
+	\def\Uptree{
+		\gdef\NT@treemodeset{\psset{treemode=U}}
+		\gdef\NT@lengthlabelcommand{\naput[nrot=0]}
+		\gdef\NT@bootlabelcommand{\nbput[nrot=0]}
+		\NT@gupangles
+		}
+	\def\downtree{
+		\def\NT@treemodeset{\psset{treemode=D}}
+		\def\NT@lengthlabelcommand{\naput[nrot=0]}
+		\def\NT@bootlabelcommand{\nbput[nrot=0]}
+		\NT@downangles
+		}
+	\def\Downtree{
+		\gdef\NT@treemodeset{\psset{treemode=D}}
+		\gdef\NT@lengthlabelcommand{\naput[nrot=0]}
+		\gdef\NT@bootlabelcommand{\nbput[nrot=0]}
+		\NT@gdownangles
+		}
+	\def\lefttree{
+		\def\NT@treemodeset{\psset{treemode=L}}
+		\def\NT@lengthlabelcommand{\naput[nrot=0]}
+		\def\NT@bootlabelcommand{\nbput[nrot=0]}
+		\NT@leftangles
+		}
+	\def\Lefttree{
+		\gdef\NT@treemodeset{\psset{treemode=L}}
+		\gdef\NT@lengthlabelcommand{\naput[nrot=0]}
+		\gdef\NT@bootlabelcommand{\nbput[nrot=0]}
+		\NT@gleftangles
+		}
+	\def\righttree{
+		\def\NT@treemodeset{\psset{treemode=R}}
+		\def\NT@lengthlabelcommand{\naput[nrot=0]}
+		\def\NT@bootlabelcommand{\nbput[nrot=0]}
+		\NT@horizontalangles
+		}
+	\def\Righttree{
+		\gdef\NT@treemodeset{\psset{treemode=R}}
+		\gdef\NT@lengthlabelcommand{\naput[nrot=0]}
+		\gdef\NT@bootlabelcommand{\nbput[nrot=0]}
+		\NT@ghorizontalangles
+		}
+	\def\showbranchlengths{
+		\def\NT@displaylength{\NT@lengthlabelcommand{\NT@lengthmodifier\NT@length}}
+		\def\NT@treesepset{\psset{treesep=.75cm}}
+		}
+	\def\Showbranchlengths{
+		\gdef\NT@displaylength{\NT@lengthlabelcommand{\NT@lengthmodifier\NT@length}}
+		\gdef\NT@treesepset{\psset{treesep=.75cm}}
+		}
+	\def\nodeseparation##1{
+		\def\NT@latertreesepset{\psset{treesep=##1}}
+		}
+	\def\Nodeseparation##1{
+		\gdef\NT@latertreesepset{\psset{treesep=##1}}
+		}
+	\def\showbootstrapvalues{
+		\def\NT@displaybootval{\NT@bootlabelcommand{\NT@bootmodifier\NT@bv}}
+		}
+	\def\Showbootstrapvalues{
+		\gdef\NT@displaybootval{\NT@bootlabelcommand{\NT@bootmodifier\NT@bv}}
+		}
+	\def\nobranchlengths{
+		\def\NT@displaylength{\relax}
+		\def\NT@treesepset{\psset{treesep=0.5cm}}
+		}
+	\def\Nobranchlengths{
+		\gdef\NT@displaylength{\relax}
+		\gdef\NT@treesepset{\psset{treesep=0.5cm}}
+		}
+	\def\usebranchlengths{
+		\def\NT@numlength{\NT@length}
+		}
+	\def\Usebranchlengths{
+		\gdef\NT@numlength{\NT@length}
+		}
+	\def\unitbranchlengths{
+		\def\NT@numlength{1}
+		}
+	\def\Unitbranchlengths{
+		\gdef\NT@numlength{1}
+		}
+	\newcommand{\contemporarytips}[1][41]{
+		\def\NT@ctprop{##1}
+		\def\NT@numlength{\the\dimen21}
+		}
+	\newcommand{\Contemporarytips}[1][41]{
+		\gdef\NT@ctprop{##1}
+		\gdef\NT@numlength{\the\dimen21}
+		}
+	\def\Highlowlabels{
+		\gdef\NT@curtnsep{\ifcurtn3.5ex\global\curtnfalse\else 1ex\global\curtntrue\fi}
+		}
+	\def\highlowlabels{
+		\def\NT@curtnsep{\ifcurtn3.5ex\global\curtnfalse\else 1ex\global\curtntrue\fi}
+		}
+	\def\levellabels{
+		\def\NT@curtnsep{1ex}
+		}
+	\def\Levellabels{
+		\gdef\NT@curtnsep{1ex}
+		}
+	\def\nobootstrapvalues{
+		\def\NT@displaybootval{\relax}
+		}
+	\def\Nobootstrapvalues{
+		\gdef\NT@displaybootval{\relax}
+		}
+	\def\curvedbranches{
+		\def\NT@branchstylecommand{\renewcommand\psedge{\nccurve[angleA=\NT@angleAc,angleB=\NT@angleB,nrot=:U]}}
+		}
+	\def\angledbranches{
+		\def\NT@branchstylecommand{\renewcommand\psedge{\ncangle[armB=0,angleA=\NT@angleA,angleB=\NT@angleB,nrot=:U]}}
+		}
+	\def\straightbranches{
+		\def\NT@branchstylecommand{\renewcommand\psedge{\ncline}}
+		}
+	\def\Curvedbranches{
+		\gdef\NT@branchstylecommand{\renewcommand\psedge{\nccurve[angleA=\NT@angleAc,angleB=\NT@angleB,nrot=:U]}}
+		}
+	\def\Angledbranches{
+		\gdef\NT@branchstylecommand{\renewcommand\psedge{\ncangle[armB=0,angleA=\NT@angleA,angleB=\NT@angleB,tpos=.1,nrot=:U]}}
+		}
+	\def\Straightbranches{
+		\gdef\NT@branchstylecommand{\renewcommand\psedge{\ncline}}
+		}
+	\def\scalebar{\relax}
+	\renewcommand{\scalebar}[1][1]{{\NT@unitcommand\pstree[treemode=R,xbbd=4ex,xbbh=1ex,levelsep=##1]{\Tp}{\Tp\tbput{\NT@lengthmodifier ##1}}}}
+	\catcode`\(=1 \catcode`\)=2%
+	\newcommand{\drawtree}[2][\relax]{\NT@makepstree{##2}{##1}}
+	}{}
+
+%Now set the defaults properly
+
+\begin{newicktree}
+
+\Downtree
+\Showbranchlengths
+\Usebranchlengths
+\Setunitlength{1cm}
+\Nodelabelformat{\itshape}
+\Lengthlabelformat{}
+\Bootlabelformat{\bfseries}
+\Showbootstrapvalues
+\Levellabels
+\Angledbranches
+\Nodemarkers
+\end{newicktree}
